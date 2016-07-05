@@ -1,0 +1,11 @@
+dimensions 1280 360
+
+platform 0 330 1000 30
+platform 0 0 640 30
+platform 0 30 30 300
+platform 610 30 30 100
+
+
+platform 500 230 90 30
+
+enemy 580 198
