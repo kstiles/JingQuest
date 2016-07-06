@@ -11,7 +11,8 @@ def run(clock, states, level):
 
     # Set up sprite groups
     sprites = pygame.sprite.Group()
-    Dummy.containers = sprites
+    dummies = pygame.sprite.Group()
+    Dummy.containers = sprites, dummies
 
     # Load and parse the level text file
     leveltext = open(level, "r")
@@ -27,7 +28,8 @@ def run(clock, states, level):
     camera = Camera(0, 0, LEVEL_WIDTH, LEVEL_HEIGHT)
 
     # Create the variables to track editor tools
-    clickStart = (0, 0)
+    clickStart = [0, 0]
+    justSaved = False
 
     while True:
 
@@ -43,7 +45,20 @@ def run(clock, states, level):
                 elif event.key == K_a:
                     camera.setSpeedX(camera.getSpeedX() - 5)
                 elif event.key == K_s:
-                    camera.setSpeedY(camera.getSpeedY() + 5)
+                    if pygame.key.get_mods() & KMOD_CTRL:
+                        leveltext = open(level, "w")
+                        # Save level dimensions
+                        leveltext.write("dimensions " + str(LEVEL_WIDTH) + " " + str(LEVEL_HEIGHT) + "\n")
+                        # Add all dummy objects to level data
+                        for dummy in dummies:
+                            if dummy.getType() == "platform":
+                                leveltext.write(dummy.getType() + " " + str(dummy.rect.left) + " " + str(dummy.rect.top) + " " + str(dummy.rect.width) + " " + str(dummy.rect.height) + "\n")
+                            elif dummy.getType() == "enemy":
+                                leveltext.write(dummy.getType() + " " + str(dummy.rect.left) + " " + str(dummy.rect.top) + "\n")
+                        justSaved = True
+                        print "Level saved as " + level
+                    else:
+                        camera.setSpeedY(camera.getSpeedY() + 5)
                 elif event.key == K_d:
                     camera.setSpeedX(camera.getSpeedX() + 5)
             elif event.type == KEYUP:
@@ -52,23 +67,35 @@ def run(clock, states, level):
                 elif event.key == K_a:
                     camera.setSpeedX(camera.getSpeedX() + 5)
                 elif event.key == K_s:
-                    camera.setSpeedY(camera.getSpeedY() - 5)
+                    if not justSaved:
+                        camera.setSpeedY(camera.getSpeedY() - 5)
+                    else:
+                        justSaved = False
                 elif event.key == K_d:
                     camera.setSpeedX(camera.getSpeedX() - 5)
             elif event.type == MOUSEBUTTONDOWN:
                 if event.button == 1:
                     mouse = pygame.mouse.get_pos()
-                    clickStart = (mouse[0] - camera.getX(), mouse[1] - camera.getY())
+                    clickStart = [mouse[0] + camera.getX(), mouse[1] + camera.getY()]
             elif event.type == MOUSEBUTTONUP:
                 if event.button == 1:
                     mouse = pygame.mouse.get_pos()
-                    Dummy(["platform", clickStart[0], clickStart[1], mouse[0], mouse[1]])
+                    clickEnd = [mouse[0] + camera.getX(), mouse[1] + camera.getY()]
+                    if clickEnd[0] < clickStart[0]:
+                        clickEnd[0], clickStart[0] = clickStart[0], clickEnd[0]
+                    if clickEnd[1] < clickStart[1]:
+                        clickEnd[1], clickStart[1] = clickStart[1], clickEnd[1]
+                    Dummy(["platform", clickStart[0], clickStart[1], clickEnd[0] - clickStart[0], clickEnd[1] - clickStart[1]])
 
         camera.move()
 
         gameWindow.fill((18, 188, 255))
         for sprite in sprites:
             gameWindow.blit(sprite.image, (sprite.rect.left - camera.getX(), sprite.rect.top - camera.getY()))
+
+        if pygame.mouse.get_pressed()[0]:
+            mouse = pygame.mouse.get_pos()
+            pygame.draw.rect(gameWindow, (212, 79, 12), (clickStart[0] - camera.getX(), clickStart[1] - camera.getY(), mouse[0] - (clickStart[0] - camera.getX()), mouse[1] - (clickStart[1] - camera.getY())))
 
         pygame.draw.line(gameWindow, (255, 0, 0), (-camera.getX(), -camera.getY()), (LEVEL_WIDTH - camera.getX(), -camera.getY()), 2)
         pygame.draw.line(gameWindow, (255, 0, 0), (-camera.getX(), -camera.getY()), (-camera.getX(), LEVEL_HEIGHT - camera.getY()), 2)
@@ -78,3 +105,4 @@ def run(clock, states, level):
         clock.tick(60)
         
         pygame.display.flip()
+

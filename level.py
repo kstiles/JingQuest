@@ -21,7 +21,7 @@ def run(clock, states):
     Enemy.containers = sprites, enemies
 
     # Load and parse the level text file
-    leveltext = open("./levels/level.txt", "r")
+    leveltext = open("./levels/level.lvl", "r")
     for line in leveltext:
         line = line.split()
         if len(line) > 0:

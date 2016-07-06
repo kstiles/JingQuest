@@ -6,7 +6,9 @@ class Dummy(pygame.sprite.Sprite):
 
         super(Dummy, self).__init__(self.containers)
 
-        if line[0] == "platform":
+        self.type = line[0]
+
+        if self.type == "platform":
 
             w, h = int(line[3]), int(line[4])
             
@@ -20,11 +22,15 @@ class Dummy(pygame.sprite.Sprite):
             pygame.draw.line(self.image, (0, 0, 0), (0, h - 2), (w, h - 2), 2)
             pygame.draw.line(self.image, (0, 0, 0), (w - 2, 0), (w - 2, h), 2)
 
-        elif line[0] == "enemy":
+        elif self.type == "enemy":
             self.image = pygame.image.load("./rsc/shrek_32px.png")
-        elif line[0] == "player":
+        elif self.type == "player":
             self.image = pygame.image.load("./rsc/jing.png")
 
         self.rect = self.image.get_rect()
         self.rect.left = int(line[1])
         self.rect.top = int(line[2])
+
+    def getType(self):
+
+        return self.type

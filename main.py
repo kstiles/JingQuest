@@ -40,7 +40,7 @@ def main():
         elif gameState == states["level"]:
             gameState = level.run(clock, states)
         elif gameState == states["editor"]:
-            gameState = leveleditor.run(clock, states, "./levels/level.txt")
+            gameState = leveleditor.run(clock, states, "./levels/level.lvl")
 
     
 
