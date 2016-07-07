@@ -1,17 +1,32 @@
 dimensions 1280 360
-platform 1125 144 34 31
-platform 0 330 1000 30
-platform 243 144 23 115
-platform 191 112 76 32
-platform 332 139 195 29
-platform 74 229 135 31
-platform 0 0 640 30
-platform 0 30 30 300
-platform 500 230 90 30
-platform 610 30 30 100
-platform 413 231 78 28
-platform 1205 142 35 31
-platform 1068 255 212 104
-enemy 580 198
-platform 30 112 103 30
-platform 324 259 80 30
+platform 1088 256 192 96
+platform 1120 160 32 32
+platform 512 288 32 32
+platform 0 320 992 32
+platform 736 192 96 32
+platform 416 32 32 32
+platform 128 96 32 32
+enemy 544 64
+platform 1216 160 32 32
+enemy 448 32
+platform 0 32 32 288
+enemy 224 64
+enemy 192 64
+enemy 416 64
+platform 416 256 192 32
+platform 384 96 224 32
+enemy 480 64
+enemy 288 64
+platform 256 160 32 32
+platform 512 32 32 32
+enemy 544 32
+enemy 576 64
+platform 224 96 32 32
+platform 128 192 128 32
+enemy 512 64
+platform 608 32 32 96
+platform 96 160 32 32
+platform 800 160 128 32
+enemy 448 64
+platform 0 0 640 32
+enemy 384 64

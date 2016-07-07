@@ -36,7 +36,7 @@ def run(clock, states):
     camera = Camera(0, 0, LEVEL_WIDTH, LEVEL_HEIGHT)
 
     # Other level variables to be implemented
-    gravity = 0.6
+    gravity = 0.5
 
     # Create the player
     player = Player()
@@ -100,7 +100,9 @@ def run(clock, states):
                     player.rect.centerx -= 1
 
         # Move player vertically with collision detection for platforms
-        player.moveY(gravity)
+        keys = pygame.key.get_pressed()
+        jumpHeld = keys[K_SPACE] or keys[K_UP]
+        player.moveY(gravity, jumpHeld)
         if len(pygame.sprite.spritecollide(player, platforms, False)) > 0:
             while len(pygame.sprite.spritecollide(player, platforms, False)) > 0:
                 if player.getSpeedY() < 0:

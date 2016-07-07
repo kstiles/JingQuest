@@ -32,9 +32,12 @@ class Player(pygame.sprite.Sprite):
         if self.speedX != 0:
             self.animate()
 
-    def moveY(self, gravity):
+    def moveY(self, gravity, jumpHeld):
 
-        self.speedY += gravity
+        gravityMultiplier = 1
+        if not jumpHeld and self.speedY < 0:
+            gravityMultiplier = 3
+        self.speedY += gravity * gravityMultiplier
         if self.speedY > self.maxSpeedY:
             self.speedY = self.maxSpeedY
         self.rect.centery += self.speedY

@@ -11,8 +11,8 @@ class Platform(pygame.sprite.Sprite):
         self.image.fill((247, 145, 35))
 
         # Draw an outline
-        pygame.draw.line(self.image, (0, 0, 0), (0, 0), (w, 0), 2)
-        pygame.draw.line(self.image, (0, 0, 0), (0, 0), (0, h), 2)
+        pygame.draw.line(self.image, (0, 0, 0), (0, 0), (w, 0), 1)
+        pygame.draw.line(self.image, (0, 0, 0), (0, 0), (0, h), 1)
         pygame.draw.line(self.image, (0, 0, 0), (0, h - 2), (w, h - 2), 2)
         pygame.draw.line(self.image, (0, 0, 0), (w - 2, 0), (w - 2, h), 2)
 
