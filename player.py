@@ -1,4 +1,5 @@
 import pygame
+from pygame.locals import *
 
 class Player(pygame.sprite.Sprite):
 
@@ -26,14 +27,36 @@ class Player(pygame.sprite.Sprite):
 
         self.rotation = 0
         
-    def moveX(self):
+    def moveX(self, platforms):
 
+        # Move player horizontally with collision detection for platforms
+        keys = pygame.key.get_pressed()
+        if keys[K_LEFT] and keys[K_RIGHT]:
+            self.speedX = 0
+        elif keys[K_LEFT]:
+            self.speedX = -self.maxSpeedX
+        elif keys[K_RIGHT]:
+            self.speedX = self.maxSpeedX
+        else:
+            self.speedX = 0
+        
         self.rect.centerx += self.speedX
         if self.speedX != 0:
             self.animate()
 
-    def moveY(self, gravity, jumpHeld):
+        if len(pygame.sprite.spritecollide(self, platforms, False)) > 0:
+            while len(pygame.sprite.spritecollide(self, platforms, False)) > 0:
+                if self.speedX < 0:
+                    self.rect.centerx += 1
+                elif self.speedX >= 0:
+                    self.rect.centerx -= 1
 
+    def moveY(self, platforms, gravity):
+
+        # Move player vertically with collision detection for platforms
+        keys = pygame.key.get_pressed()
+        jumpHeld = keys[K_SPACE] or keys[K_UP]
+        
         gravityMultiplier = 1
         if not jumpHeld and self.speedY < 0:
             gravityMultiplier = 3
@@ -41,6 +64,29 @@ class Player(pygame.sprite.Sprite):
         if self.speedY > self.maxSpeedY:
             self.speedY = self.maxSpeedY
         self.rect.centery += self.speedY
+
+        if len(pygame.sprite.spritecollide(self, platforms, False)) > 0:
+            while len(pygame.sprite.spritecollide(self, platforms, False)) > 0:
+                if self.speedY < 0:
+                    self.rect.centery += 1
+                elif self.speedY >= 0:
+                    self.rect.centery -= 1
+            if self.speedY > 0:
+                self.canJump = True
+            self.speedY = 0
+        else:
+            self.rect.centery += 1
+            if len(pygame.sprite.spritecollide(self, platforms, False)) == 0:
+                self.canJump = False
+            else:
+                self.canJump = True
+            self.rect.centery -= 1
+
+    def jump(self):
+
+        if self.canJump:
+            self.canJump = False
+            self.speedY = -self.maxSpeedY
 
     def animate(self):
 

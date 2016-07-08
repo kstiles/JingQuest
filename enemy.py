@@ -22,16 +22,33 @@ class Enemy(pygame.sprite.Sprite):
         self.speedY = 0
         self.maxSpeedY = 12
 
-    def moveX(self):
+    def moveX(self, platforms):
 
+        # Move enemy horizontally with collision detection for platforms
         self.rect.centerx += self.speedX
+        if len(pygame.sprite.spritecollide(self, platforms, False)) > 0:
+            while len(pygame.sprite.spritecollide(self, platforms, False)) > 0:
+                if self.speedX < 0:
+                    self.rect.centerx += 1
+                elif self.speedX >= 0:
+                    self.rect.centerx -= 1
+            self.speedX = -self.speedX
 
-    def moveY(self, gravity):
+    def moveY(self, platforms, gravity):
 
+        # Move enemy vertically with collision detection for platforms
         self.speedY += gravity
         if self.speedY > self.maxSpeedY:
             self.speedY = self.maxSpeedY
         self.rect.centery += self.speedY
+
+        if len(pygame.sprite.spritecollide(self, platforms, False)) > 0:
+                while len(pygame.sprite.spritecollide(self, platforms, False)) > 0:
+                    if self.speedY < 0:
+                        self.rect.centery += 1
+                    elif self.speedY >= 0:
+                        self.rect.centery -= 1
+                self.speedY = 0
 
 
 

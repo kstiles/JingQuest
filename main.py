@@ -36,11 +36,11 @@ def main():
         if gameState == states["loading"]:
             pass
         elif gameState == states["menu"]:
-            gameState = menu.run(clock, states)
+            gameState = menu.run(states)
         elif gameState == states["level"]:
-            gameState = level.run(clock, states)
+            gameState = level.run(states)
         elif gameState == states["editor"]:
-            gameState = leveleditor.run(clock, states, "./levels/level.lvl")
+            gameState = leveleditor.run(states, "./levels/level.lvl")
 
     
 

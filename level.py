@@ -5,11 +5,14 @@ from player import Player
 from camera import Camera
 from enemy import Enemy
 
-def run(clock, states):
+def run(states):
 
     # Set up the window for this game state
     gameWindow = pygame.display.get_surface()
     pygame.display.set_caption("Level")
+
+    # Create Pygame clock to regulate frames
+    clock = pygame.time.Clock()
 
     # Set up sprite groups
     sprites = pygame.sprite.Group()
@@ -51,82 +54,27 @@ def run(clock, states):
                 if event.key == K_ESCAPE:
                     return states["menu"]
                 elif event.key == K_SPACE or event.key == K_UP:
-                    if player.getCanJump():
-                        player.setCanJump(False)
-                        player.setSpeedY(-player.getMaxSpeedY())
-                elif event.key == K_LEFT:
-                    player.setSpeedX(player.getSpeedX() - player.getMaxSpeedX())
-                elif event.key == K_RIGHT:
-                    player.setSpeedX(player.getSpeedX() + player.getMaxSpeedX())
-            elif event.type == KEYUP:
-                if event.key == K_LEFT:
-                    player.setSpeedX(player.getSpeedX() + player.getMaxSpeedX())
-                elif event.key == K_RIGHT:
-                    player.setSpeedX(player.getSpeedX() - player.getMaxSpeedX())
+                    player.jump()
 
-        """ IMPORTANT: NEED TO MOVE ALL COLLISION DETECTION TO SEPARATE FILES
-            BEFORE IMPLEMENTING ANY NEW COLLIDABLE OBJECTS, OTHERWISE CODE
-            WILL BECOME UNMANAGEABLE """
-
-        # Move enemies horizontally with collision detection for platforms
+        # Move enemies with collision detection for platforms
         for enemy in enemies:
-            enemy.moveX()
-            if len(pygame.sprite.spritecollide(enemy, platforms, False)) > 0:
-                while len(pygame.sprite.spritecollide(enemy, platforms, False)) > 0:
-                    if enemy.getSpeedX() < 0:
-                        enemy.rect.centerx += 1
-                    elif enemy.getSpeedX() >= 0:
-                        enemy.rect.centerx -= 1
-                enemy.setSpeedX(-enemy.getSpeedX())
+            enemy.moveX(platforms)
+            enemy.moveY(platforms, gravity)
 
-        # Move enemies vertically with collision detection for platforms
-        for enemy in enemies:
-            enemy.moveY(gravity)
-            if len(pygame.sprite.spritecollide(enemy, platforms, False)) > 0:
-                while len(pygame.sprite.spritecollide(enemy, platforms, False)) > 0:
-                    if enemy.getSpeedY() < 0:
-                        enemy.rect.centery += 1
-                    elif enemy.getSpeedY() >= 0:
-                        enemy.rect.centery -= 1
-                enemy.setSpeedY(0)
+        # Move player with collision detection for platforms
+        player.moveX(platforms)
+        player.moveY(platforms, gravity)
 
-        # Move player horizontally with collision detection for platforms
-        player.moveX()
-        if len(pygame.sprite.spritecollide(player, platforms, False)) > 0:
-            while len(pygame.sprite.spritecollide(player, platforms, False)) > 0:
-                if player.getSpeedX() < 0:
-                    player.rect.centerx += 1
-                elif player.getSpeedX() >= 0:
-                    player.rect.centerx -= 1
-
-        # Move player vertically with collision detection for platforms
-        keys = pygame.key.get_pressed()
-        jumpHeld = keys[K_SPACE] or keys[K_UP]
-        player.moveY(gravity, jumpHeld)
-        if len(pygame.sprite.spritecollide(player, platforms, False)) > 0:
-            while len(pygame.sprite.spritecollide(player, platforms, False)) > 0:
-                if player.getSpeedY() < 0:
-                    player.rect.centery += 1
-                elif player.getSpeedY() >= 0:
-                    player.rect.centery -= 1
-            if player.getSpeedY() > 0:
-                player.setCanJump(True)
-            player.setSpeedY(0)
-        else:
-            player.rect.centery += 1
-            if len(pygame.sprite.spritecollide(player, platforms, False)) == 0:
-                player.setCanJump(False)
-            else:
-                player.setCanJump(True)
-            player.rect.centery -= 1
-
+        # Keep the player in the center of the screen
         camera.follow(player)
                 
+        # Refresh the window and redraw everything
         gameWindow.fill((18, 188, 255))
         for sprite in sprites:
             gameWindow.blit(sprite.image, (sprite.rect.left - camera.getX(), sprite.rect.top - camera.getY()))
-        #sprites.draw(gameWindow)
-        
+
+        # Limit FPS to 60 before displaying the next frame
         clock.tick(60)
-        
+
+        # Display the next frame
         pygame.display.flip()

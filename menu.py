@@ -1,11 +1,14 @@
 import pygame
 from pygame.locals import *
 
-def run(clock, states):
+def run(states):
 
     # Set up the window for this game state
     gameWindow = pygame.display.get_surface()
     pygame.display.set_caption("Menu")
+
+    # Create Pygame clock to regulate frames
+    clock = pygame.time.Clock()
 
     # Load needed images
     title = pygame.image.load("./rsc/title.png")

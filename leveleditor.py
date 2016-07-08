@@ -3,11 +3,14 @@ from pygame.locals import *
 from editordummy import Dummy
 from camera import Camera
 
-def run(clock, states, level):
+def run(states, level):
 
     # Set up the window for this game state
     gameWindow = pygame.display.get_surface()
     pygame.display.set_caption("Editor: " + level)
+
+    # Create Pygame clock to regulate frames
+    clock = pygame.time.Clock()
 
     # Set up sprite groups
     sprites = pygame.sprite.Group()
