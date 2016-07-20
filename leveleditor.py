@@ -2,12 +2,18 @@ import pygame
 from pygame.locals import *
 from editordummy import Dummy
 from camera import Camera
+from toolbar import Toolbar
 
 def run(states, level):
 
     # Set up the window for this game state
     gameWindow = pygame.display.get_surface()
     pygame.display.set_caption("Editor: " + level)
+
+    # Get the window width and height
+    rect = gameWindow.get_rect()
+    SCREEN_WIDTH = rect.width
+    SCREEN_HEIGHT = rect.height
 
     # Create Pygame clock to regulate frames
     clock = pygame.time.Clock()
@@ -17,6 +23,8 @@ def run(states, level):
     dummies = pygame.sprite.Group()
     Dummy.containers = sprites, dummies
 
+    player = None
+
     # Load and parse the level text file
     leveltext = open(level, "r")
     for line in leveltext:
@@ -24,17 +32,24 @@ def run(states, level):
         if len(line) > 0:
             if line[0] == "dimensions":
                 LEVEL_WIDTH, LEVEL_HEIGHT = int(line[1]), int(line[2])
+            elif line[0] == "player":
+                if player != None:
+                    player.kill()
+                player = Dummy(line)
             else:
                 Dummy(line)
 
     # Create the camera
     camera = Camera(0, 0, LEVEL_WIDTH, LEVEL_HEIGHT)
 
+    # Create the toolbar
+    toolbar = Toolbar(SCREEN_WIDTH)
+
     # Create the variables for editor tools
     clickStart = [0, 0]
     justSaved = False
     
-    currentTool = "platform"
+    makingPlatform = False
 
     while True:
 
@@ -56,22 +71,23 @@ def run(states, level):
                         leveltext.write("dimensions " + str(LEVEL_WIDTH) + " " + str(LEVEL_HEIGHT) + "\n")
                         # Add all dummy objects to level data
                         for dummy in dummies:
-                            if dummy.getType() == "platform":
-                                leveltext.write(dummy.getType() + " " + str(dummy.rect.left) + " " + str(dummy.rect.top) + " " + str(dummy.rect.width) + " " + str(dummy.rect.height) + "\n")
-                            elif dummy.getType() == "enemy":
-                                leveltext.write(dummy.getType() + " " + str(dummy.rect.left) + " " + str(dummy.rect.top) + "\n")
+                            leveltext.write(dummy.getDataString())
                         justSaved = True
                         print "Level saved as " + level
                     else:
                         camera.setSpeedY(camera.getSpeedY() + 5)
                 elif event.key == K_d:
                     camera.setSpeedX(camera.getSpeedX() + 5)
+                elif event.key == K_SPACE:
+                    toolbar.toggle()
                 elif event.key == K_1:
-                    currentTool = "platform"
-                    print "tool set to platform"
+                    toolbar.setTool("player")
                 elif event.key == K_2:
-                    currentTool = "enemy"
-                    print "tool set to enemy"
+                    toolbar.setTool("platform")
+                elif event.key == K_3:
+                    toolbar.setTool("enemy")
+                elif event.key == K_4:
+                    toolbar.setTool("datboi")
             elif event.type == KEYUP:
                 if event.key == K_w:
                     camera.setSpeedY(camera.getSpeedY() + 5)
@@ -86,12 +102,37 @@ def run(states, level):
                     camera.setSpeedX(camera.getSpeedX() - 5)
             elif event.type == MOUSEBUTTONDOWN:
                 if event.button == 1:
+                    
                     mouse = pygame.mouse.get_pos()
-                    clickStart = [mouse[0] + camera.getX(), mouse[1] + camera.getY()]
-                    clickStart[0] = int(clickStart[0] / 32) * 32
-                    clickStart[1] = int(clickStart[1] / 32) * 32
-                    if currentTool == "enemy":
-                        Dummy(["enemy", str(clickStart[0]), str(clickStart[1])])
+                    toolbarButton = toolbar.handleMouse(mouse, event.button)
+                    
+                    if toolbarButton == "none":
+                        clickStart = snapToGrid([mouse[0] + camera.getX(), mouse[1] + camera.getY()])
+                        if toolbar.getTool() == "platform":
+                            makingPlatform = True
+                        elif toolbar.getTool() == "enemy":
+                            Dummy(["enemy", str(clickStart[0]), str(clickStart[1])])
+                        elif toolbar.getTool() == "datboi":
+                            Dummy(["datboi", str(clickStart[0]), str(clickStart[1] - 32)])
+                        elif toolbar.getTool() == "player":
+                            # Replace the old player dummy with the new one
+                            if player != None:
+                                player.kill()
+                            player = Dummy(["player", str(clickStart[0]), str(clickStart[1])])
+
+                    elif toolbarButton == "quit":
+
+                        return states["menu"]
+                            
+                    elif toolbarButton == "save":
+                        leveltext = open(level, "w")
+                        # Save level dimensions
+                        leveltext.write("dimensions " + str(LEVEL_WIDTH) + " " + str(LEVEL_HEIGHT) + "\n")
+                        # Add all dummy objects to level data
+                        for dummy in dummies:
+                            leveltext.write(dummy.getDataString())
+                        print "Level saved as " + level
+                    
                 elif event.button == 3:
                     mouse = pygame.mouse.get_pos()
                     for dummy in dummies:
@@ -100,30 +141,36 @@ def run(states, level):
                             break
             elif event.type == MOUSEBUTTONUP:
                 if event.button == 1:
-                    if currentTool == "platform":
+                    if toolbar.getTool() == "platform" and makingPlatform:
                         createPlatform(camera, clickStart)
+                    makingPlatform = False
 
         camera.move()
 
         gameWindow.fill((18, 188, 255))
         for sprite in sprites:
-            gameWindow.blit(sprite.image, (sprite.rect.left - camera.getX(), sprite.rect.top - camera.getY()))
+            gameWindow.blit(sprite.image, (sprite.rect.left - camera.getX() + sprite.getOffset()[0], sprite.rect.top - camera.getY() + sprite.getOffset()[1]))
 
-        if currentTool == "platform" and pygame.mouse.get_pressed()[0]:
+        if toolbar.getTool() == "platform" and pygame.mouse.get_pressed()[0] and makingPlatform:
             drawPreviewRect(gameWindow, camera, clickStart)
 
-        drawGuidelines(gameWindow, camera, LEVEL_WIDTH, LEVEL_HEIGHT)
+        drawGuidelines(gameWindow, camera, SCREEN_WIDTH, SCREEN_HEIGHT)
+        drawBorderlines(gameWindow, camera, LEVEL_WIDTH, LEVEL_HEIGHT)
+
+        toolbar.draw(gameWindow)
 
         clock.tick(60)
         
         pygame.display.flip()
 
+def snapToGrid(point):
+
+    return [int(point[0] / 32) * 32, int(point[1] / 32) * 32]
+
 def drawPreviewRect(surface, camera, clickStart):
 
     mouse = pygame.mouse.get_pos()
-    clickEnd = [mouse[0] + camera.getX(), mouse[1] + camera.getY()]
-    clickEnd[0] = int(clickEnd[0] / 32) * 32
-    clickEnd[1] = int(clickEnd[1] / 32) * 32
+    clickEnd = snapToGrid([mouse[0] + camera.getX(), mouse[1] + camera.getY()])
 
     # Correct the rectangle based on start and end click points
     # Case 1: clickStart top left, clickEnd bottom right
@@ -148,9 +195,7 @@ def drawPreviewRect(surface, camera, clickStart):
 def createPlatform(camera, clickStart):
 
     mouse = pygame.mouse.get_pos()
-    clickEnd = [mouse[0] + camera.getX(), mouse[1] + camera.getY()]
-    clickEnd[0] = int(clickEnd[0] / 32) * 32
-    clickEnd[1] = int(clickEnd[1] / 32) * 32
+    clickEnd = snapToGrid([mouse[0] + camera.getX(), mouse[1] + camera.getY()])
 
     # Correct the rectangle based on start and end click points
     # Case 1: clickStart top left, clickEnd bottom right
@@ -174,14 +219,15 @@ def createPlatform(camera, clickStart):
 
 def drawGuidelines(surface, camera, width, height):
 
-    # Draw horizontal gridlines
-    for i in range(width / 32):
+    # Draw vertical gridlines
+    for i in range(width / 32 + 1):
         pygame.draw.line(surface, (255, 255, 255), (32 * i - camera.getX() % 32, 0) , (32 * i - camera.getX() % 32, height))
 
-    # Draw vertical gridlines
+    # Draw horizontal gridlines
     for i in range(height / 32 + 2):
         pygame.draw.line(surface, (255, 255, 255), (0, 32 * i - camera.getY() % 32), (width, 32 * i - camera.getY() % 32))
 
+def drawBorderlines(surface, camera, width, height):
     # Draw the level borders
     pygame.draw.line(surface, (255, 0, 0), (-camera.getX(), -camera.getY()), (width - camera.getX(), -camera.getY()), 3)
     pygame.draw.line(surface, (255, 0, 0), (-camera.getX(), -camera.getY()), (-camera.getX(), height - camera.getY()), 3)

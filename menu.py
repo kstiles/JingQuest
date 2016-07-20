@@ -26,6 +26,8 @@ def run(states):
                     return states["quit"]
                 elif event.key == K_SPACE:
                     return states["level"]
+                elif event.key == K_z:
+                    return states["level"]
                 elif event.key == K_RETURN:
                     return states["editor"]
         
@@ -33,7 +35,7 @@ def run(states):
 
         # Draw the title screen
         gameWindow.fill((0, 0, 255))
-        gameWindow.blit(title, (0, 0))
-        gameWindow.blit(kevin, (20, 20))
-        gameWindow.blit(jing, (510, 100))
+        gameWindow.blit(title, (160, 90))
+        gameWindow.blit(kevin, (180, 110))
+        gameWindow.blit(jing, (670, 190))
         pygame.display.flip()

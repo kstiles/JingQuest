@@ -6,14 +6,16 @@ class Camera():
 
         self.x = x
         self.y = y
-        self.width = 640
-        self.height = 360
+
+        rect = pygame.display.get_surface().get_rect()
+        self.width = rect.width
+        self.height = rect.height
 
         self.levelWidth = levelWidth
         self.levelHeight = levelHeight
 
         self.lockX = False
-        self.lockY = True
+        self.lockY = False
 
         self.speedX = 0
         self.speedY = 0

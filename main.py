@@ -1,4 +1,4 @@
-import pygame, os
+import pygame, os, traceback
 from pygame.locals import *
 
 #import loading
@@ -13,8 +13,8 @@ def main():
     pygame.init()
 
     # Create the window
-    SCREEN_WIDTH = 640
-    SCREEN_HEIGHT = 360
+    SCREEN_WIDTH = 960
+    SCREEN_HEIGHT = 540
     os.environ["SDL_VIDEO_CENTERED"] = "1"
     gameWindow = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
@@ -48,5 +48,9 @@ def main():
     pygame.quit()
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except:
+        traceback.print_exc()
+        pygame.quit()
     

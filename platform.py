@@ -22,3 +22,6 @@ class Platform(pygame.sprite.Sprite):
         # Set the platform's position
         self.rect.left = x
         self.rect.top = y
+
+    def getOffset(self):
+        return (0, 0)
